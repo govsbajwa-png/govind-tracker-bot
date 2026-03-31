@@ -29,9 +29,8 @@ WHOOP_SCOPES = "read:cycles read:recovery read:sleep read:workouts offline"
 # Google Sheets (via Apps Script web app — no service account needed)
 GOOGLE_APPS_SCRIPT_URL = _require("GOOGLE_APPS_SCRIPT_URL")
 
-# APIs
-GROQ_API_KEY = _require("GROQ_API_KEY")
-ANTHROPIC_API_KEY = _require("ANTHROPIC_API_KEY")
+# OpenAI (used for both Whisper transcription and GPT extraction)
+OPENAI_API_KEY = _require("OPENAI_API_KEY")
 
 # Supabase
 SUPABASE_URL = _require("SUPABASE_URL")

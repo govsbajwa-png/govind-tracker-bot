@@ -1,31 +1,30 @@
-"""Groq Whisper transcription service for voice messages."""
+"""OpenAI Whisper transcription service for voice messages."""
 
 import asyncio
+from io import BytesIO
 
-from groq import Groq
+from openai import OpenAI
 
-from bot.config import GROQ_API_KEY
+from bot.config import OPENAI_API_KEY
 
-client = Groq(api_key=GROQ_API_KEY)
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-async def transcribe_voice(
-    audio_bytes: bytes, filename: str = "voice.ogg"
-) -> str:
-    """Transcribe audio bytes using Groq's distil-whisper-large-v3-en model.
+def transcribe_voice(audio_bytes: bytes, filename: str = "voice.ogg") -> str:
+    """Transcribe audio bytes using OpenAI Whisper.
 
-    The Groq client is synchronous, so we run it in an executor
-    to avoid blocking the async event loop.
+    Synchronous — callers should await via run_in_executor if needed.
     """
-    loop = asyncio.get_running_loop()
-    transcript = await loop.run_in_executor(None, _transcribe_sync, audio_bytes, filename)
-    return transcript
-
-
-def _transcribe_sync(audio_bytes: bytes, filename: str) -> str:
-    """Synchronous transcription call to Groq."""
+    buf = BytesIO(audio_bytes)
+    buf.name = filename
     result = client.audio.transcriptions.create(
-        model="distil-whisper-large-v3-en",
-        file=(filename, audio_bytes),
+        model="whisper-1",
+        file=buf,
     )
     return result.text
+
+
+async def transcribe_voice_async(audio_bytes: bytes, filename: str = "voice.ogg") -> str:
+    """Async wrapper for transcription."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, transcribe_voice, audio_bytes, filename)

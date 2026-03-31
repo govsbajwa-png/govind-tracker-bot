@@ -1,6 +1,5 @@
 python-telegram-bot[job-queue]==22.6
-groq==0.9.0
-anthropic==0.49.0
+openai==1.82.0
 supabase==2.13.0
 pydantic==2.11.0
 python-dotenv==1.0.1

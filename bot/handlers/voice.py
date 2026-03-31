@@ -7,7 +7,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from bot.config import TELEGRAM_USER_ID
-from bot.services.transcription import transcribe_voice
+from bot.services.transcription import transcribe_voice_async as transcribe_voice
 from bot.services.extraction import extract_health_data
 
 logger = logging.getLogger(__name__)

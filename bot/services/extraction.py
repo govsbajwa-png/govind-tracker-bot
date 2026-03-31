@@ -1,13 +1,13 @@
-"""Claude Haiku extraction service for parsing health metrics from transcripts."""
+"""OpenAI GPT extraction service for parsing health metrics from transcripts."""
 
 import asyncio
 import json
 
-import anthropic
+from openai import OpenAI
 
-from bot.config import ANTHROPIC_API_KEY
+from bot.config import OPENAI_API_KEY
 
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 EXTRACTION_SYSTEM_PROMPT = (
     "You extract health metrics from voice transcript text. "
@@ -21,28 +21,25 @@ EXTRACTION_SYSTEM_PROMPT = (
 )
 
 
-async def extract_health_data(transcript: str) -> dict:
-    """Send a transcript to Claude Haiku and extract structured health data.
-
-    Returns a dict of health metrics, or an empty dict if parsing fails.
-    """
-    loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(None, _extract_sync, transcript)
-    return result
-
-
 def _extract_sync(transcript: str) -> dict:
-    """Synchronous extraction call to Claude Haiku."""
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=1024,
-        system=EXTRACTION_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": transcript}],
+    """Synchronous extraction call to GPT-4o-mini."""
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
+            {"role": "user", "content": transcript},
+        ],
+        max_tokens=512,
+        temperature=0,
     )
-
-    raw_text = message.content[0].text
-
+    raw_text = response.choices[0].message.content
     try:
         return json.loads(raw_text)
     except (json.JSONDecodeError, IndexError, TypeError):
         return {}
+
+
+async def extract_health_data(transcript: str) -> dict:
+    """Async wrapper — extract structured health data from transcript."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, _extract_sync, transcript)

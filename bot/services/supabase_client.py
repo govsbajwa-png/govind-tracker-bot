@@ -19,14 +19,16 @@ def upsert_daily_record(record_dict: dict) -> dict:
 
 def get_daily_record(date_str: str) -> dict | None:
     """Get a single daily record by date string (YYYY-MM-DD)."""
-    result = (
-        supabase.table("daily_records")
-        .select("*")
-        .eq("date", date_str)
-        .maybe_single()
-        .execute()
-    )
-    return result.data
+    try:
+        result = (
+            supabase.table("daily_records")
+            .select("*")
+            .eq("date", date_str)
+            .execute()
+        )
+        return result.data[0] if result.data else None
+    except Exception:
+        return None
 
 
 def save_whoop_tokens(
@@ -45,14 +47,16 @@ def save_whoop_tokens(
 
 def get_whoop_tokens() -> dict | None:
     """Retrieve stored Whoop OAuth tokens."""
-    result = (
-        supabase.table("whoop_tokens")
-        .select("*")
-        .eq("id", 1)
-        .maybe_single()
-        .execute()
-    )
-    return result.data
+    try:
+        result = (
+            supabase.table("whoop_tokens")
+            .select("*")
+            .eq("id", 1)
+            .execute()
+        )
+        return result.data[0] if result.data else None
+    except Exception:
+        return None
 
 
 def save_memory(key: str, value: dict) -> None:
@@ -64,11 +68,13 @@ def save_memory(key: str, value: dict) -> None:
 
 def get_memory(key: str) -> dict | None:
     """Get a value from conversation_memory by key."""
-    result = (
-        supabase.table("conversation_memory")
-        .select("*")
-        .eq("key", key)
-        .maybe_single()
-        .execute()
-    )
-    return result.data
+    try:
+        result = (
+            supabase.table("conversation_memory")
+            .select("*")
+            .eq("key", key)
+            .execute()
+        )
+        return result.data[0] if result.data else None
+    except Exception:
+        return None

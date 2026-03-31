@@ -131,35 +131,40 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text("Sorry, had a brain fart. Try again?")
         return
 
-    # Save conversation history
-    history.append({"role": "user", "content": user_text})
-    history.append({"role": "assistant", "content": reply})
-    save_conversation_history(TELEGRAM_USER_ID, history)
-
-    # Extract and save any health data from the response
-    extracted = extract_health_data_from_response(reply)
-    if extracted:
-        record_data = {"date": today.isoformat(), **extracted}
-        # Merge with existing
-        existing = get_daily_record(today.isoformat())
-        if existing:
-            for k, v in existing.items():
-                if k not in record_data and k not in ("id", "created_at", "updated_at"):
-                    record_data[k] = v
-        upsert_daily_record(record_data)
-        logger.info("Saved health data: %s", extracted)
-
     # Clean the JSON block out of the reply before sending to user
     clean_reply = reply
     if "```json" in clean_reply:
         try:
-            start = clean_reply.index("```json")
-            end = clean_reply.index("```", start + 7) + 3
-            clean_reply = clean_reply[:start].strip() + "\n" + clean_reply[end:].strip()
+            json_start = clean_reply.index("```json")
+            json_end = clean_reply.index("```", json_start + 7) + 3
+            clean_reply = clean_reply[:json_start].strip() + "\n" + clean_reply[json_end:].strip()
         except ValueError:
             pass
 
+    # Send reply to user FIRST (most important thing)
     await update.message.reply_text(clean_reply.strip() or "Got it!")
+
+    # Then save stuff in background (non-critical)
+    try:
+        history.append({"role": "user", "content": user_text})
+        history.append({"role": "assistant", "content": reply})
+        save_conversation_history(TELEGRAM_USER_ID, history)
+    except Exception as e:
+        logger.error("Failed to save chat history: %s", e)
+
+    try:
+        extracted = extract_health_data_from_response(reply)
+        if extracted:
+            record_data = {"date": today.isoformat(), **extracted}
+            existing = get_daily_record(today.isoformat())
+            if existing:
+                for k, v in existing.items():
+                    if k not in record_data and k not in ("id", "created_at", "updated_at"):
+                        record_data[k] = v
+            upsert_daily_record(record_data)
+            logger.info("Saved health data: %s", extracted)
+    except Exception as e:
+        logger.error("Failed to save health data: %s", e)
 
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

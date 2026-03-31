@@ -26,8 +26,8 @@ WHOOP_API_BASE = "https://api.prod.whoop.com/developer/v2"
 WHOOP_REDIRECT_URI = "http://localhost:8080/oauth/callback"
 WHOOP_SCOPES = "read:cycles read:recovery read:sleep read:workouts offline"
 
-# Google Sheets (via Apps Script web app — no service account needed)
-GOOGLE_APPS_SCRIPT_URL = _require("GOOGLE_APPS_SCRIPT_URL")
+# Google Sheets (optional — via Apps Script web app)
+GOOGLE_APPS_SCRIPT_URL = os.getenv("GOOGLE_APPS_SCRIPT_URL", "")
 
 # OpenAI (used for both Whisper transcription and GPT extraction)
 OPENAI_API_KEY = _require("OPENAI_API_KEY")

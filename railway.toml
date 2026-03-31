@@ -5,3 +5,4 @@ builder = "nixpacks"
 startCommand = "python -m bot.main"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
+# Force rebuild
